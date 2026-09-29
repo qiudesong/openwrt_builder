@@ -1,9 +1,13 @@
 dnsmasq-full
-nano
+vim
 bash
-curl
+# DDNS（含自定义阿里云脚本）依赖；默认不预装。
+# curl
 wget-ssl
-wpad-openssl
+# DDNS（含自定义阿里云脚本）依赖；默认不预装。
+# openssl-util
+ca-certificates
+libustream-openssl
 
 luci
 luci-i18n-base-zh-cn
@@ -11,16 +15,13 @@ luci-i18n-base-zh-cn
 luci-i18n-package-manager-zh-cn
 luci-i18n-firewall-zh-cn
 
-iw
-iwinfo
+luci-app-ttyd
+
 tcpdump
 udpxy
 ethtool
 irqbalance
 iperf3
-
-e100-firmware
-iwlwifi-firmware-ax210
 
 pciutils
 ipset
@@ -29,7 +30,6 @@ libnftnl
 libmnl
 ca-bundle
 
-kmod-iwlwifi
 kmod-inet-diag
 kmod-tun
 kmod-nf-tproxy
@@ -47,36 +47,36 @@ iptables-nft
 iptables-mod-filter
 iptables-mod-ipmark
 
-ip6tables-nft
 ip6tables-mod-nat
 ip6tables-extra
 ip6tables-nft
-ip6tables-mod-nat
 
-adguardhome
-luci-app-adguardhome
+kmod-tcp-bbr
 
-sing-box
-xray-core
+# adguardhome
+# luci-app-adguardhome
 
-xfrpc
-luci-app-xfrpc
-luci-i18n-xfrpc-zh-cn
-
-cloudflared
-luci-app-cloudflared
-luci-i18n-cloudflared-zh-cn
+# xray-core
 
 kmod-wireguard
 wireguard-tools
 luci-proto-wireguard
 
-bind-host
-ddns-scripts
-ddns-scripts-cloudflare
-ddns-scripts-services
-luci-app-ddns
-luci-i18n-ddns-zh-cn
+openconnect
+luci-proto-openconnect
+
+mwan3
+luci-app-mwan3
+
+# DDNS 相关组件默认不预装。
+# bind-host
+# ddns-scripts
+# from https://github.com/renndong/ddns-scripts-aliyun/releases
+# ddns-scripts-aliyun 
+# ddns-scripts-cloudflare
+# ddns-scripts-services
+# luci-app-ddns
+# luci-i18n-ddns-zh-cn
 
 luci-mod-dashboard
 luci-i18n-dashboard-zh-cn
@@ -85,9 +85,9 @@ vnstat2
 luci-app-vnstat2
 luci-i18n-vnstat2-zh-cn
 
-nlbwmon
-luci-app-nlbwmon
-luci-i18n-nlbwmon-zh-cn
+# nlbwmon
+# luci-app-nlbwmon
+# luci-i18n-nlbwmon-zh-cn
 
 # luci-app-attendedsysupgrade
 # luci-i18n-attendedsysupgrade-zh-cn
@@ -96,10 +96,17 @@ luci-i18n-nlbwmon-zh-cn
 # luci-app-pbr
 # luci-i18n-pbr-zh-cn
 
-natmap
-luci-app-natmap
-luci-i18n-natmap-zh-cn
+# natmap
+# luci-app-natmap
+# luci-i18n-natmap-zh-cn
 
 # smartdns
 # luci-app-smartdns
 # luci-i18n-smartdns-zh-cn
+
+frr
+frr-zebra
+frr-watchfrr
+frr-vrrpd
+frr-ospfd
+frr-ospf6d

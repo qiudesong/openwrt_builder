@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -eu
+
+# 单臂模式中，客户端与上级路由均通过 LAN 区域连接。
+# 启用 IPv4 masquerade，确保同网段客户端的回包经 OpenWrt 返回。
+uci -q delete firewall.mgmt || true
+
+lan_zone=''
+for section in $(uci -q show firewall | sed -n 's/^firewall\.\([^=]*\)=zone$/\1/p'); do
+  if [ "$(uci -q get "firewall.$section.name")" = 'lan' ]; then
+    lan_zone=$section
+    break
+  fi
+done
+
+test -n "$lan_zone"
+uci set "firewall.$lan_zone.input=ACCEPT"
+uci set "firewall.$lan_zone.output=ACCEPT"
+uci set "firewall.$lan_zone.forward=ACCEPT"
+uci set "firewall.$lan_zone.masq=1"
+uci commit firewall

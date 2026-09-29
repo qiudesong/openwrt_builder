@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -eu
+
+uci -q batch <<'EOF'
+  set system.@system[0].hostname='openwrt'
+  set system.@system[0].timezone='CST-8'
+  set system.@system[0].zonename='Asia/Shanghai'
+
+  # 清空默认 NTP 并替换为国内服务器。
+  delete system.ntp.server
+  add_list system.ntp.server='ntp.tencent.com'
+  add_list system.ntp.server='ntp1.aliyun.com'
+  add_list system.ntp.server='cn.ntp.org.cn'
+  commit system
+EOF

@@ -1,0 +1,41 @@
+#!/bin/sh
+
+set -eu
+
+uci -q batch <<'EOF'
+  # 单臂旁路由：eth0 同时连接上级路由与终端所在的二层网络。
+  # LAN 作为 IPv4 DHCP 和 DHCPv6 客户端，接收系统默认路由。
+  set network.lan.device='br-lan'
+  set network.lan.proto='dhcp'
+  set network.lan.defaultroute='1'
+  set network.lan.peerdns='1'
+  delete network.lan.ipaddr
+  delete network.lan.netmask
+  delete network.lan.ip6assign
+  delete network.lan.ip6hint
+
+  set network.lan6='interface'
+  set network.lan6.device='@lan'
+  set network.lan6.proto='dhcpv6'
+  set network.lan6.reqaddress='try'
+  set network.lan6.reqprefix='no'
+  set network.lan6.defaultroute='1'
+  set network.lan6.peerdns='1'
+
+  # WAN/WAN6 默认禁用，避免激活额外网口。
+  set network.wan.proto='none'
+  set network.wan.defaultroute='0'
+  set network.wan.peerdns='0'
+  set network.wan6.proto='none'
+  set network.wan6.defaultroute='0'
+  set network.wan6.peerdns='0'
+
+  # 地址与 IPv6 默认路由由上级路由提供，OpenWrt 不提供 DHCP、DHCPv6 或 RA 服务。
+  set dhcp.lan.ignore='1'
+  set dhcp.lan.ra='disabled'
+  set dhcp.lan.dhcpv6='disabled'
+  commit dhcp
+
+  set network.@globals[0].packet_steering='1'
+  commit network
+EOF

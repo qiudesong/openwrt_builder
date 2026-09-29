@@ -1,9 +1,9 @@
 dnsmasq-full
 nano
 bash
-curl
+# DDNS（含自定义阿里云脚本）依赖；默认不预装。
+# curl
 wget-ssl
-wpad-openssl
 
 luci
 luci-i18n-base-zh-cn
@@ -11,16 +11,11 @@ luci-i18n-base-zh-cn
 luci-i18n-package-manager-zh-cn
 luci-i18n-firewall-zh-cn
 
-iw
-iwinfo
 tcpdump
 udpxy
 ethtool
 irqbalance
 iperf3
-
-e100-firmware
-iwlwifi-firmware-ax210
 
 pciutils
 ipset
@@ -29,7 +24,6 @@ libnftnl
 libmnl
 ca-bundle
 
-kmod-iwlwifi
 kmod-inet-diag
 kmod-tun
 kmod-nf-tproxy
@@ -50,8 +44,6 @@ iptables-mod-ipmark
 ip6tables-nft
 ip6tables-mod-nat
 ip6tables-extra
-ip6tables-nft
-ip6tables-mod-nat
 
 adguardhome
 luci-app-adguardhome
@@ -71,12 +63,19 @@ kmod-wireguard
 wireguard-tools
 luci-proto-wireguard
 
-bind-host
-ddns-scripts
-ddns-scripts-cloudflare
-ddns-scripts-services
-luci-app-ddns
-luci-i18n-ddns-zh-cn
+openconnect
+luci-proto-openconnect
+
+mwan3
+luci-app-mwan3
+
+# DDNS 相关组件默认不预装。
+# bind-host
+# ddns-scripts
+# ddns-scripts-cloudflare
+# ddns-scripts-services
+# luci-app-ddns
+# luci-i18n-ddns-zh-cn
 
 luci-mod-dashboard
 luci-i18n-dashboard-zh-cn

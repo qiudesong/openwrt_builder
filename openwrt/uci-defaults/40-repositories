@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -eu
+
+# OpenWrt 24.10+ 使用 APK 时，将官方包源替换为中科大镜像。
+# ImmortalWrt 和仍使用 opkg 的版本不存在该文件时会直接跳过。
+repository_file='/etc/apk/repositories.d/distfeeds.list'
+if [ -f "$repository_file" ]; then
+  sed -i 's#downloads\.openwrt\.org#mirrors.ustc.edu.cn/openwrt#g' "$repository_file"
+fi

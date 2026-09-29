@@ -1,1 +1,67 @@
 -dnsmasq
+
+-libustream-mbedtls
+
+-ppp
+-ppp-mod-pppoe
+-kmod-ppp
+-kmod-pppoe
+
+# PVE VirtIO 旁路由不使用无线网络。
+-wpad-basic-mbedtls
+-wpad-basic-openssl
+-wpad-basic-wolfssl
+-wpad-openssl
+-iw
+-iwinfo
+-kmod-cfg80211
+-kmod-mac80211
+
+# PVE 虚拟机没有实体按键或 USB 外设。
+-kmod-button-hotplug
+-kmod-input-core
+-kmod-input-evdev
+-kmod-usb-core
+-kmod-usb2
+-kmod-usb3
+-kmod-usb-ohci
+-kmod-usb-uhci
+-kmod-usb2-pci
+-kmod-usb3-pci
+-kmod-usb-storage
+
+# 仅保留 PVE VirtIO 驱动，移除常见物理网卡驱动。
+-kmod-3c59x 
+-kmod-e100 
+-kmod-e1000 
+-kmod-e1000e
+-kmod-igb
+-kmod-igc
+-kmod-ixgbe
+-kmod-ixgbevf
+-kmod-natsemi 
+-kmod-ne2k-pci
+-kmod-pcnet32 
+-kmod-8139too 
+-kmod-r8169 
+-kmod-r8168
+-kmod-r8125
+-kmod-sis900 
+-kmod-tg3
+-kmod-via-rhine 
+-kmod-via-velocity
+
+# PVE VirtIO 虚拟机不使用实体按键、无线、USB 或物理网卡驱动。
+-kmod-button-hotplug
+-kmod-e1000e
+-kmod-igb
+-kmod-igc
+-kmod-ixgbe
+-kmod-usb-hid
+-kmod-usb-ohci-pci
+-kmod-usb2
+-kmod-usb3
+-wpad-basic-mbedtls
+
+# 此镜像不提供 IPv6 RA 或 DHCPv6 服务，仅作为 DHCPv6 客户端运行。
+-odhcpd-ipv6only

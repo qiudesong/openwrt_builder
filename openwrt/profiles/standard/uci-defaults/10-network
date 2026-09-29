@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -eu
+
+uci -q batch <<'EOF'
+  # 标准双口路由：eth0 为上游 WAN，eth1 为终端 LAN。
+  set network.wan.device='eth0'
+  set network.wan.proto='dhcp'
+  set network.wan.defaultroute='1'
+  set network.wan.peerdns='1'
+
+  set network.wan6='interface'
+  set network.wan6.device='@wan'
+  set network.wan6.proto='dhcpv6'
+  set network.wan6.reqaddress='try'
+  set network.wan6.reqprefix='auto'
+  set network.wan6.defaultroute='1'
+  set network.wan6.peerdns='1'
+
+  # eth1 是 br-lan 的唯一端口，向终端提供 IPv4、RA 和 DHCPv6 服务。
+  set network.lan.device='br-lan'
+  set network.lan.proto='static'
+  set network.lan.ipaddr='192.168.20.1'
+  set network.lan.netmask='255.255.255.0'
+  set network.lan.defaultroute='0'
+  set network.lan.peerdns='0'
+  set network.lan.ip6assign='64'
+  delete network.lan6
+
+  # x86 默认 br-lan bridge 会占用 eth0；标准双口模式改为仅绑定 eth1。
+  delete network.@device[0].ports
+  add_list network.@device[0].ports='eth1'
+
+  set dhcp.lan.ignore='0'
+  set dhcp.lan.start='100'
+  set dhcp.lan.limit='150'
+  set dhcp.lan.leasetime='12h'
+  set dhcp.lan.ra='server'
+  set dhcp.lan.dhcpv6='server'
+  set dhcp.lan.ra_management='1'
+  commit dhcp
+
+  set network.@globals[0].packet_steering='1'
+  commit network
+EOF

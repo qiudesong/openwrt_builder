@@ -1,0 +1,117 @@
+name: OpenWrt Image Builder
+
+on:
+  workflow_dispatch:
+    inputs:
+      distribution:
+        description: '发行版'
+        required: true
+        default: 'openwrt'
+        type: choice
+        options:
+          - openwrt
+          - immortalwrt
+      topology:
+        description: '网络 profile'
+        required: true
+        default: 'single-arm'
+        type: choice
+        options:
+          - single-arm
+          - standard
+      version:
+        description: '可选；填写精确版本，例如 24.10.5。留空时自动使用最新稳定版'
+        required: false
+        type: string
+  schedule:
+    # 每周一北京时间 03:00 自动构建最新 OpenWrt。
+    - cron: '0 19 * * 0'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-builder-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build ${{ inputs.topology || 'single-arm' }} x86-64 firmware
+    runs-on: ubuntu-24.04
+    if: github.event.repository.owner.id == github.event.sender.id
+    env:
+      DISTRIBUTION: ${{ inputs.distribution || 'openwrt' }}
+      VERSION: ${{ inputs.version || '' }}
+      TOPOLOGY: ${{ inputs.topology || 'single-arm' }}
+
+    steps:
+      - name: 获取本仓库源码
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: 安装解压工具
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --yes zstd
+
+      - name: 下载并校验 ImageBuilder
+        id: imagebuilder
+        run: |
+          set -euo pipefail
+          bash scripts/resolve-imagebuilder.sh "$DISTRIBUTION" "$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: 准备首次启动配置
+        run: |
+          set -euo pipefail
+          profile_path="openwrt/profiles/$TOPOLOGY"
+          test -d "$profile_path/uci-defaults"
+          for script in "$profile_path"/uci-defaults/* openwrt/uci-defaults/*; do
+            install -Dm755 "$script" "custom-files/etc/uci-defaults/$(basename "$script")"
+          done
+          install -Dm644 openwrt/files/etc/sysctl.d/99-custom.conf custom-files/etc/sysctl.d/99-custom.conf
+
+      - name: 解析预装软件包
+        id: packages
+        run: |
+          set -euo pipefail
+          bash scripts/prepare-packages.sh '${{ steps.imagebuilder.outputs.package_file }}' selected-packages.txt >> "$GITHUB_OUTPUT"
+
+      - name: 应用 ImageBuilder 配置
+        run: |
+          set -euo pipefail
+          source_path='${{ steps.imagebuilder.outputs.source_path }}'
+          bash scripts/modify-imagebuilder-config.sh "$source_path/.config"
+
+      - name: 生成固件
+        run: |
+          set -euo pipefail
+          source_path='${{ steps.imagebuilder.outputs.source_path }}'
+          make -C "$source_path" image PACKAGES='${{ steps.packages.outputs.packages }}' FILES='../custom-files'
+
+      - name: 收集固件和构建信息
+        run: |
+          set -euo pipefail
+          bash scripts/collect-artifacts.sh \
+            '${{ steps.imagebuilder.outputs.source_path }}' \
+            artifact \
+            selected-packages.txt \
+            "$DISTRIBUTION" \
+            '${{ steps.imagebuilder.outputs.version }}' \
+            "$GITHUB_SHA" \
+            "$TOPOLOGY"
+
+      - name: 上传构建信息
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: ${{ env.DISTRIBUTION }}-${{ steps.imagebuilder.outputs.version }}-${{ env.TOPOLOGY }}-buildinfo
+          path: artifact/buildinfo/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: 上传固件
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: ${{ env.DISTRIBUTION }}-${{ steps.imagebuilder.outputs.version }}-${{ env.TOPOLOGY }}-x86-64-firmware
+          path: artifact/firmware/
+          if-no-files-found: error
+          retention-days: 30

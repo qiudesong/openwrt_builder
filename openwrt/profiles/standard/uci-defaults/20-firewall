@@ -1,0 +1,32 @@
+#!/bin/sh
+
+set -eu
+
+uci -q delete firewall.mgmt || true
+
+lan_zone=''
+wan_zone=''
+for section in $(uci -q show firewall | sed -n 's/^firewall\.\([^=]*\)=zone$/\1/p'); do
+  case "$(uci -q get "firewall.$section.name")" in
+    lan) lan_zone=$section ;;
+    wan) wan_zone=$section ;;
+  esac
+done
+
+test -n "$lan_zone"
+test -n "$wan_zone"
+uci set "firewall.$lan_zone.input=ACCEPT"
+uci set "firewall.$lan_zone.output=ACCEPT"
+uci set "firewall.$lan_zone.forward=ACCEPT"
+uci set "firewall.$lan_zone.masq=0"
+uci set "firewall.$wan_zone.input=REJECT"
+uci set "firewall.$wan_zone.output=ACCEPT"
+uci set "firewall.$wan_zone.forward=REJECT"
+uci set "firewall.$wan_zone.masq=1"
+
+# 使用固定 section 名称避免首次启动脚本重试时重复创建转发规则。
+uci -q delete firewall.lan_wan || true
+uci set firewall.lan_wan='forwarding'
+uci set firewall.lan_wan.src='lan'
+uci set firewall.lan_wan.dest='wan'
+uci commit firewall
